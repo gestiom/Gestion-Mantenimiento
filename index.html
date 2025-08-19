@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Mantenimiento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1f1f1f; /* Fondo negro/gris muy oscuro */
+            color: #f0f0f0;
+        }
+        .bg-custom-yellow { background-color: #FFC107; }
+        .text-custom-yellow { color: #FFC107; }
+        .border-custom-yellow { border-color: #FFC107; }
+        .ring-custom-yellow { --tw-ring-color: #FFC107; }
+        .bg-custom-dark { background-color: #374151; } /* Barras en gris más claro */
+        .bg-custom-darker { background-color: #262626; } /* Cajas de texto y botones un poco más claras */
+        .tab-active { background-color: #FFC107; color: #1a1a1a; }
+        .calendar-day.selected { background-color: #FFC107; color: #1a1a1a; font-weight: bold; }
+        .calendar-day.today { border-color: #FFC107; }
+        .modal { transition: opacity 0.25s ease; }
+        .modal-content { transition: transform 0.25s ease; }
+        .task-dot {
+            height: 5px;
+            width: 5px;
+            background-color: #FFC107;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        /* Clase para forzar mayúsculas */
+        .uppercase-input {
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body class="bg-custom-darker">
+
+    <div class="container mx-auto max-w-4xl p-4 sm:p-6">
+
+        <header class="flex justify-center items-center gap-4 mb-8">
+            <!-- IMAGEN INCRUSTADA (VERSIÓN CORREGIDA) -->
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAeAAAAGABAMAAAB/43vrAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJUExURf///wB/AAAALwSg3gAAAAN0Uk5TAAoO5yEAAAReSURBVHja7d1tV9pQEAbgX9/uSRAhIWFgISFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhICFhicGWPDEwNDQzLCBVU0EgfQ==" alt="Logo" class="w-16 h-16 rounded-full">
+            <h1 class="text-3xl sm:text-4xl font-bold text-custom-yellow">Gestión de Mantenimiento</h1>
+        </header>
+
+        <nav class="flex justify-center items-center gap-4 mb-8">
+            <button data-tab="tasks" class="tab-button flex-1 text-center font-semibold py-2 px-4 rounded-lg bg-custom-dark shadow-lg transition">TAREAS</button>
+            <button data-tab="stock" class="tab-button flex-1 text-center font-semibold py-2 px-4 rounded-lg bg-custom-dark shadow-lg transition">STOCK</button>
+            <button data-tab="maintenance" class="tab-button flex-1 text-center font-semibold py-2 px-4 rounded-lg bg-custom-dark shadow-lg transition">SUPERVISION</button>
+        </nav>
+
+        <main>
+            <!-- Módulo de Tareas -->
+            <div id="module-tasks" class="module">
+                 <div class="bg-custom-dark p-3 rounded-lg shadow-lg mb-8">
+                    <h2 id="weekTitle" class="text-base sm:text-lg font-semibold text-white text-center mb-3"></h2>
+                    <div id="calendar-container" class="grid grid-cols-7 gap-1 text-center"></div>
+                    <div class="flex justify-between items-center mt-3">
+                         <button id="prevWeekBtn" class="bg-gray-600 text-white font-bold px-3 py-1 rounded-md hover:bg-gray-500 transition text-sm">&lt; Ant</button>
+                         <button id="toggleHistoryBtn" class="bg-gray-600 text-white font-bold px-3 py-1 rounded-md hover:bg-gray-500 transition text-sm">Ver Historial</button>
+                         <button id="nextWeekBtn" class="bg-gray-600 text-white font-bold px-3 py-1 rounded-md hover:bg-gray-500 transition text-sm">Sig &gt;</button>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="tasksViewTitle" class="text-xl font-semibold text-white">Tareas para el <span id="selectedDateTitle" class="text-custom-yellow"></span></h2>
+                    <button id="openTaskModalBtn" class="bg-custom-yellow text-black font-bold px-6 py-2 rounded-md hover:bg-yellow-400 transition-transform transform hover:scale-105">Agregar Tarea</button>
+                </div>
+                <div id="taskList" class="space-y-4"></div>
+                <div id="taskHistoryList" class="space-y-4 hidden"></div>
+            </div>
+
+            <!-- Módulo de Stock -->
+            <div id="module-stock" class="module hidden">
+                 <div class="bg-custom-dark p-6 rounded-lg shadow-lg mb-8">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Agregar Item al Inventario</h2>
+                    <form id="stockForm" class="space-y-4">
+                        <input type="text" id="stockName" placeholder="Nombre del Item" required class="uppercase-input w-full bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="number" id="stockQuantity" placeholder="Cantidad Inicial" min="0" required class="w-full bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                            <input type="date" id="stockEntryDate" required class="w-full bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                        </div>
+                        <button type="submit" class="w-full bg-custom-yellow text-black font-bold px-6 py-2 rounded-md hover:bg-yellow-400 transition">Guardar Item</button>
+                    </form>
+                </div>
+                <div id="stockList" class="space-y-4"></div>
+                 <div class="mt-8">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Historial de Movimientos de Stock</h2>
+                    <div id="stockHistoryList" class="space-y-2 text-sm"></div>
+                </div>
+            </div>
+
+            <!-- Módulo de Supervisión -->
+            <div id="module-maintenance" class="module hidden">
+                <div class="bg-custom-dark p-6 rounded-lg shadow-lg mb-8">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Agregar Registro de Supervisión</h2>
+                    <form id="supervisionForm" class="space-y-4">
+                        <input type="text" id="supervisionItemName" placeholder="Nombre del Ítem / Sector" required class="w-full bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <select id="supervisionStatus" class="w-full bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                                <option>OK</option>
+                                <option>Regular</option>
+                                <option>Mal</option>
+                            </select>
+                            <input type="date" id="supervisionControlDate" required class="w-full bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                        </div>
+                        <textarea id="supervisionDetails" placeholder="Detalles de la supervisión..." rows="2" class="w-full bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow"></textarea>
+                        <textarea id="supervisionImprovements" placeholder="Mejoras a realizar..." rows="2" class="w-full bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow"></textarea>
+                        <button type="submit" class="w-full bg-custom-yellow text-black font-bold px-6 py-2 rounded-md hover:bg-yellow-400 transition">Guardar Registro</button>
+                    </form>
+                </div>
+                <h2 class="text-xl font-semibold mb-4 text-white">Historial de Supervisión</h2>
+                <div id="supervisionList" class="space-y-4"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="taskModal" class="modal fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="modal-content bg-custom-dark rounded-lg shadow-2xl p-8 w-full max-w-lg transform scale-95">
+            <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-custom-yellow">Nueva Tarea</h2>
+            <form id="taskForm" class="space-y-4">
+                <input type="hidden" id="taskId">
+                <div>
+                    <label for="taskTitle" class="block text-sm font-medium text-gray-300">Título</label>
+                    <input type="text" id="taskTitle" required class="uppercase-input w-full mt-1 bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                </div>
+                 <div>
+                    <label for="taskDescription" class="block text-sm font-medium text-gray-300">Detalles</label>
+                    <textarea id="taskDescription" rows="3" class="w-full mt-1 bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow"></textarea>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="taskType" class="block text-sm font-medium text-gray-300">Tipo de Tarea</label>
+                        <select id="taskType" class="w-full mt-1 bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                            <option>Diaria</option>
+                            <option>Programada</option>
+                            <option>Urgente</option>
+                            <option>Gestion / Compra</option>
+                            <option>Proyecto</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="taskDueDate" class="block text-sm font-medium text-gray-300">Fecha Límite</label>
+                        <input type="date" id="taskDueDate" required class="w-full mt-1 bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="taskSector" class="block text-sm font-medium text-gray-300">Sector Solicitante</label>
+                        <input type="text" id="taskSector" class="uppercase-input w-full mt-1 bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                    </div>
+                    <div>
+                        <label for="taskPerson" class="block text-sm font-medium text-gray-300">Responsable</label>
+                        <input type="text" id="taskPerson" class="uppercase-input w-full mt-1 bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" id="cancelTaskBtn" class="bg-gray-600 text-white font-bold px-6 py-2 rounded-md hover:bg-gray-500 transition">Cancelar</button>
+                    <button type="submit" id="saveTaskBtn" class="bg-custom-yellow text-black font-bold px-6 py-2 rounded-md hover:bg-yellow-400 transition">Guardar Tarea</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="stockAdjustModal" class="modal fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="modal-content bg-custom-dark rounded-lg shadow-2xl p-8 w-full max-w-md transform scale-95">
+            <h2 id="stockAdjustTitle" class="text-2xl font-bold mb-6 text-custom-yellow">Ajustar Stock</h2>
+            <form id="stockAdjustForm" class="space-y-4">
+                <input type="hidden" id="stockAdjustId">
+                <input type="hidden" id="stockAdjustType">
+                <div>
+                    <label for="stockAdjustQuantity" class="block text-sm font-medium text-gray-300">Cantidad a Mover</label>
+                    <input type="number" id="stockAdjustQuantity" min="1" value="1" required class="w-full mt-1 bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                </div>
+                <div>
+                    <label for="stockAdjustSector" class="block text-sm font-medium text-gray-300">Sector Solicitante</label>
+                    <input type="text" id="stockAdjustSector" required class="w-full mt-1 bg-custom-darker border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-yellow">
+                </div>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" id="cancelStockAdjustBtn" class="bg-gray-600 text-white font-bold px-6 py-2 rounded-md hover:bg-gray-500 transition">Cancelar</button>
+                    <button type="submit" class="bg-custom-yellow text-black font-bold px-6 py-2 rounded-md hover:bg-yellow-400 transition">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="supervisionStatusModal" class="modal fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="modal-content bg-custom-dark rounded-lg shadow-2xl p-8 w-full max-w-sm transform scale-95">
+            <h2 class="text-xl font-bold mb-6 text-center text-custom-yellow">Cambiar Estado</h2>
+            <input type="hidden" id="supervisionEditId">
+            <div class="flex justify-around">
+                <button data-status="OK" class="status-change-btn bg-green-500 text-white font-bold px-6 py-2 rounded-md hover:bg-green-400 transition">OK</button>
+                <button data-status="Regular" class="status-change-btn bg-yellow-500 text-black font-bold px-6 py-2 rounded-md hover:bg-yellow-400 transition">Regular</button>
+                <button data-status="Mal" class="status-change-btn bg-red-500 text-white font-bold px-6 py-2 rounded-md hover:bg-red-400 transition">Mal</button>
+            </div>
+             <button type="button" id="cancelSupervisionEditBtn" class="mt-6 w-full bg-gray-600 text-white font-bold px-6 py-2 rounded-md hover:bg-gray-500 transition">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Almacenamiento y Estado ---
+            const AppStorage = {
+                get: (key) => { const data = localStorage.getItem(key); return data ? JSON.parse(data) : []; },
+                save: (key, data) => { localStorage.setItem(key, JSON.stringify(data)); }
+            };
+            let currentWeekDate = new Date();
+            let selectedDate = new Date();
+            let showingTaskHistory = false;
+
+            // --- Elementos del DOM ---
+            const nav = document.querySelector('nav');
+            const modules = { tasks: document.getElementById('module-tasks'), stock: document.getElementById('module-stock'), maintenance: document.getElementById('module-maintenance') };
+            const stockForm = document.getElementById('stockForm');
+            const stockList = document.getElementById('stockList');
+            const stockHistoryList = document.getElementById('stockHistoryList');
+            const stockAdjustModal = document.getElementById('stockAdjustModal');
+            const stockAdjustForm = document.getElementById('stockAdjustForm');
+            const cancelStockAdjustBtn = document.getElementById('cancelStockAdjustBtn');
+            const stockAdjustTitle = document.getElementById('stockAdjustTitle');
+            const supervisionForm = document.getElementById('supervisionForm');
+            const supervisionList = document.getElementById('supervisionList');
+            const supervisionStatusModal = document.getElementById('supervisionStatusModal');
+            const cancelSupervisionEditBtn = document.getElementById('cancelSupervisionEditBtn');
+            const weekTitle = document.getElementById('weekTitle');
+            const calendarContainer = document.getElementById('calendar-container');
+            const taskListContainer = document.getElementById('taskList');
+            const selectedDateTitle = document.getElementById('selectedDateTitle');
+            const openTaskModalBtn = document.getElementById('openTaskModalBtn');
+            const taskModal = document.getElementById('taskModal');
+            const taskForm = document.getElementById('taskForm');
+            const cancelTaskBtn = document.getElementById('cancelTaskBtn');
+            const modalTitle = document.getElementById('modalTitle');
+            const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+            const tasksViewTitle = document.getElementById('tasksViewTitle');
+            const taskHistoryListContainer = document.getElementById('taskHistoryList');
+            
+            // --- Lógica de Navegación ---
+            function showModule(moduleName) {
+                nav.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('tab-active'));
+                document.querySelector(`[data-tab="${moduleName}"]`).classList.add('tab-active');
+                Object.keys(modules).forEach(key => modules[key].classList.toggle('hidden', key !== moduleName));
+                if (moduleName === 'stock') {
+                    renderStock();
+                    renderStockHistory();
+                } else if (moduleName === 'maintenance') {
+                    renderSupervision();
+                }
+            }
+            nav.addEventListener('click', (e) => e.target.closest('.tab-button') && showModule(e.target.dataset.tab));
+
+            // --- Lógica para forzar Mayúsculas ---
+            document.querySelectorAll('.uppercase-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                });
+            });
+
+            // --- Lógica del Módulo de Stock (sin cambios, se omite por brevedad) ---
+             function renderStock() {
+                stockList.innerHTML = '';
+                const items = AppStorage.get('stock');
+                if (items.length === 0) {
+                    stockList.innerHTML = `<p class="text-gray-400 text-center py-4">No hay ítems en el inventario.</p>`;
+                    return;
+                }
+                items.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'bg-custom-dark p-4 rounded-lg shadow-md';
+                    el.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-custom-yellow">${item.name}</h3>
+                                <p class="text-xs text-gray-500 mt-1">Ingreso: ${new Date(item.entryDate + 'T00:00:00').toLocaleDateString('es-AR')}</p>
+                            </div>
+                            <div class="text-right flex-shrink-0 ml-4">
+                                <p class="text-2xl font-bold">${item.quantity}</p>
+                                <p class="text-xs text-gray-400">Unidades</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-end items-center gap-2 mt-4">
+                            <button data-id="${item.id}" data-action="adjust-stock" data-type="add" class="bg-green-600 text-white font-bold w-10 h-10 rounded-full text-xl hover:bg-green-500">+</button>
+                            <button data-id="${item.id}" data-action="adjust-stock" data-type="subtract" class="bg-red-600 text-white font-bold w-10 h-10 rounded-full text-xl hover:bg-red-500">-</button>
+                            <button data-id="${item.id}" data-action="delete-stock" class="bg-gray-600 text-white font-semibold px-3 py-1 rounded-md hover:bg-gray-500 text-xs">Borrar</button>
+                        </div>
+                    `;
+                    stockList.appendChild(el);
+                });
+            }
+
+            function renderStockHistory() {
+                stockHistoryList.innerHTML = '';
+                const history = AppStorage.get('stock_history').sort((a, b) => new Date(b.date) - new Date(a.date));
+                 if (history.length === 0) {
+                    stockHistoryList.innerHTML = `<p class="text-gray-500 text-center py-2">Sin movimientos.</p>`;
+                    return;
+                }
+                history.forEach(log => {
+                    const color = log.type === 'add' ? 'text-green-400' : 'text-red-400';
+                    const sign = log.type === 'add' ? '+' : '-';
+                    const el = document.createElement('div');
+                    el.className = 'bg-custom-dark p-2 rounded-md flex justify-between items-center';
+                    el.innerHTML = `
+                        <div>
+                            <p><span class="font-bold">${log.itemName}</span>: <span class="${color}">${sign}${log.quantity}</span> unidades.</p>
+                            <p class="text-xs text-gray-400">Sector: ${log.sector}</p>
+                        </div>
+                        <p class="text-xs text-gray-500">${new Date(log.date).toLocaleString('es-AR')}</p>
+                    `;
+                    stockHistoryList.appendChild(el);
+                });
+            }
+
+            stockForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const items = AppStorage.get('stock');
+                const newItem = {
+                    id: Date.now(),
+                    name: document.getElementById('stockName').value,
+                    quantity: parseInt(document.getElementById('stockQuantity').value, 10),
+                    entryDate: document.getElementById('stockEntryDate').value,
+                };
+                items.push(newItem);
+                AppStorage.save('stock', items);
+                renderStock();
+                stockForm.reset();
+                document.getElementById('stockEntryDate').valueAsDate = new Date();
+            });
+
+            stockList.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (!button) return;
+                const { action, id, type } = button.dataset;
+                const itemId = parseInt(id, 10);
+
+                if (action === 'delete-stock') {
+                    if (confirm('¿Estás seguro de que querés borrar este ítem?')) {
+                        let items = AppStorage.get('stock');
+                        items = items.filter(item => item.id !== itemId);
+                        AppStorage.save('stock', items);
+                        renderStock();
+                    }
+                } else if (action === 'adjust-stock') {
+                    openStockAdjustModal(itemId, type);
+                }
+            });
+
+            function openStockAdjustModal(itemId, type) {
+                const items = AppStorage.get('stock');
+                const item = items.find(i => i.id === itemId);
+                stockAdjustTitle.textContent = `${type === 'add' ? 'Agregar a' : 'Restar de'} ${item.name}`;
+                stockAdjustForm.querySelector('#stockAdjustId').value = itemId;
+                stockAdjustForm.querySelector('#stockAdjustType').value = type;
+                stockAdjustModal.classList.remove('hidden');
+                setTimeout(() => {
+                    stockAdjustModal.classList.remove('opacity-0');
+                    stockAdjustModal.querySelector('.modal-content').classList.remove('scale-95');
+                }, 10);
+            }
+            
+            function closeStockAdjustModal() {
+                stockAdjustModal.classList.add('opacity-0');
+                stockAdjustModal.querySelector('.modal-content').classList.add('scale-95');
+                setTimeout(() => stockAdjustModal.classList.add('hidden'), 250);
+            }
+            cancelStockAdjustBtn.addEventListener('click', closeStockAdjustModal);
+
+            stockAdjustForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const itemId = parseInt(document.getElementById('stockAdjustId').value, 10);
+                const type = document.getElementById('stockAdjustType').value;
+                const quantity = parseInt(document.getElementById('stockAdjustQuantity').value, 10);
+                const sector = document.getElementById('stockAdjustSector').value;
+
+                const items = AppStorage.get('stock');
+                const item = items.find(i => i.id === itemId);
+                
+                if (item) {
+                    const amount = type === 'add' ? quantity : -quantity;
+                    if (type === 'subtract' && item.quantity < quantity) {
+                        alert('No se puede restar más de la cantidad existente.');
+                        return;
+                    }
+                    item.quantity += amount;
+                    AppStorage.save('stock', items);
+
+                    const history = AppStorage.get('stock_history');
+                    history.push({ itemName: item.name, type, quantity, sector, date: new Date() });
+                    AppStorage.save('stock_history', history);
+                    
+                    renderStock();
+                    renderStockHistory();
+                    closeStockAdjustModal();
+                }
+            });
+
+            // --- Lógica del Módulo de Supervisión ---
+            function getStatusColor(status) {
+                const colors = { 'OK': 'bg-green-500', 'Regular': 'bg-yellow-500', 'Mal': 'bg-red-500' };
+                return colors[status] || 'bg-gray-500';
+            }
+
+            function renderSupervision() {
+                supervisionList.innerHTML = '';
+                const items = AppStorage.get('supervision').sort((a,b) => new Date(b.controlDate) - new Date(a.controlDate));
+                if (items.length === 0) {
+                    supervisionList.innerHTML = `<p class="text-gray-400 text-center py-4">No hay registros de supervisión.</p>`;
+                    return;
+                }
+                items.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'bg-custom-dark p-3 rounded-lg shadow-md';
+                    el.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-base font-bold text-custom-yellow">${item.name}</h3>
+                                <p class="text-xs text-gray-400">Control: ${new Date(item.controlDate + 'T00:00:00').toLocaleDateString('es-AR')}</p>
+                            </div>
+                            <button data-id="${item.id}" data-action="edit-status" class="text-xs font-semibold px-2 py-1 rounded-full text-white ${getStatusColor(item.status)} cursor-pointer hover:opacity-80 transition">${item.status}</button>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-gray-700 text-sm">
+                            <p><span class="font-semibold">Detalles:</span> ${item.details || 'N/A'}</p>
+                            <p class="mt-1"><span class="font-semibold">Mejoras:</span> ${item.improvements || 'N/A'}</p>
+                        </div>
+                         <div class="flex justify-end mt-2">
+                            <button data-id="${item.id}" data-action="delete-supervision" class="bg-red-700 text-white font-semibold px-3 py-1 rounded-md hover:bg-red-600 text-xs">Borrar</button>
+                        </div>
+                    `;
+                    supervisionList.appendChild(el);
+                });
+            }
+
+            supervisionForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const items = AppStorage.get('supervision');
+                const newItem = {
+                    id: Date.now(),
+                    name: document.getElementById('supervisionItemName').value,
+                    status: document.getElementById('supervisionStatus').value,
+                    details: document.getElementById('supervisionDetails').value,
+                    controlDate: document.getElementById('supervisionControlDate').value,
+                    improvements: document.getElementById('supervisionImprovements').value,
+                };
+                items.push(newItem);
+                AppStorage.save('supervision', items);
+                renderSupervision();
+                supervisionForm.reset();
+                document.getElementById('supervisionControlDate').valueAsDate = new Date();
+            });
+            
+            supervisionList.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (!button) return;
+                const { action, id } = button.dataset;
+                const itemId = parseInt(id, 10);
+
+                if (action === 'delete-supervision') {
+                     if (confirm('¿Estás seguro de que querés borrar este registro?')) {
+                        let items = AppStorage.get('supervision');
+                        items = items.filter(item => item.id !== itemId);
+                        AppStorage.save('supervision', items);
+                        renderSupervision();
+                    }
+                } else if (action === 'edit-status') {
+                    openSupervisionStatusModal(itemId);
+                }
+            });
+
+            function openSupervisionStatusModal(itemId) {
+                document.getElementById('supervisionEditId').value = itemId;
+                supervisionStatusModal.classList.remove('hidden');
+                setTimeout(() => {
+                    supervisionStatusModal.classList.remove('opacity-0');
+                    supervisionStatusModal.querySelector('.modal-content').classList.remove('scale-95');
+                }, 10);
+            }
+
+            function closeSupervisionStatusModal() {
+                supervisionStatusModal.classList.add('opacity-0');
+                supervisionStatusModal.querySelector('.modal-content').classList.add('scale-95');
+                setTimeout(() => supervisionStatusModal.classList.add('hidden'), 250);
+            }
+            cancelSupervisionEditBtn.addEventListener('click', closeSupervisionStatusModal);
+
+            supervisionStatusModal.addEventListener('click', (e) => {
+                const button = e.target.closest('.status-change-btn');
+                if (button) {
+                    const newStatus = button.dataset.status;
+                    const itemId = parseInt(document.getElementById('supervisionEditId').value, 10);
+                    let items = AppStorage.get('supervision');
+                    const item = items.find(i => i.id === itemId);
+                    if (item) {
+                        item.status = newStatus;
+                        AppStorage.save('supervision', items);
+                        renderSupervision();
+                        closeSupervisionStatusModal();
+                    }
+                }
+            });
+
+            // --- Lógica de Tareas ---
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            function getStartOfWeek(date) {
+                const newDate = new Date(date);
+                const day = newDate.getDay();
+                const diff = newDate.getDate() - day + (day === 0 ? -6 : 1);
+                return new Date(newDate.setDate(diff));
+            }
+
+            function renderCalendar() {
+                const tasks = AppStorage.get('tasks');
+                const startOfWeek = getStartOfWeek(currentWeekDate);
+                weekTitle.textContent = `Semana del ${startOfWeek.getDate()} de ${monthNames[startOfWeek.getMonth()]}`;
+                calendarContainer.innerHTML = '';
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(startOfWeek);
+                    day.setDate(startOfWeek.getDate() + i);
+                    const dayKey = day.toISOString().split('T')[0];
+                    const tasksForDay = tasks.some(task => task.dueDate === dayKey);
+                    const dayElement = document.createElement('div');
+                    dayElement.dataset.date = dayKey;
+                    dayElement.className = 'calendar-day cursor-pointer p-1 rounded-lg transition relative';
+                    const isToday = day.toDateString() === new Date().toDateString();
+                    const isSelected = day.toDateString() === selectedDate.toDateString();
+                    if (isToday) dayElement.classList.add('today', 'border-2');
+                    if (isSelected) dayElement.classList.add('selected');
+                    dayElement.innerHTML = `<span class="text-xs">${dayNames[(i + 1) % 7]}</span><span class="block text-lg font-bold">${day.getDate()}</span> ${tasksForDay ? '<div class="task-dot"></div>' : ''}`;
+                    calendarContainer.appendChild(dayElement);
+                }
+            }
+
+            calendarContainer.addEventListener('click', (e) => {
+                const dayElement = e.target.closest('.calendar-day');
+                if (dayElement) {
+                    selectedDate = new Date(dayElement.dataset.date + 'T00:00:00');
+                    updateApp();
+                }
+            });
+
+            document.getElementById('prevWeekBtn').addEventListener('click', () => {
+                currentWeekDate.setDate(currentWeekDate.getDate() - 7);
+                updateApp();
+            });
+            document.getElementById('nextWeekBtn').addEventListener('click', () => {
+                currentWeekDate.setDate(currentWeekDate.getDate() + 7);
+                updateApp();
+            });
+
+            function getTypeColor(type) {
+                const colors = { 'Urgente': 'bg-red-500', 'Programada': 'bg-blue-500', 'Gestion / Compra': 'bg-purple-500', 'Proyecto': 'bg-green-500' };
+                return colors[type] || 'bg-gray-500';
+            }
+
+            function renderTasks() {
+                selectedDateTitle.textContent = selectedDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
+                const allTasks = AppStorage.get('tasks');
+                const selectedDateKey = selectedDate.toISOString().split('T')[0];
+                const filteredTasks = allTasks.filter(task => task.dueDate === selectedDateKey);
+
+                taskListContainer.innerHTML = '';
+                if (filteredTasks.length === 0) {
+                    taskListContainer.innerHTML = `<p class="text-gray-400 text-center py-4">No hay tareas pendientes para esta fecha.</p>`;
+                    return;
+                }
+                filteredTasks.forEach(task => {
+                    const el = document.createElement('div');
+                    el.className = 'bg-custom-dark p-3 rounded-lg shadow-md flex items-start justify-between';
+                    el.innerHTML = `
+                        <div>
+                            <h3 class="text-base font-bold">${task.title}</h3>
+                            <p class="text-sm text-gray-400">${task.person} - ${task.sector}</p>
+                            <p class="text-sm mt-1 whitespace-pre-wrap">${task.description}</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-2 flex-shrink-0 ml-4">
+                           <span class="text-xs font-semibold px-2 py-1 rounded-full text-white ${getTypeColor(task.type)}">${task.type}</span>
+                           <button data-id="${task.id}" data-action="complete-task" class="text-sm bg-green-600 text-white font-semibold px-3 py-1 rounded-md hover:bg-green-500 mt-2">Hecho</button>
+                        </div>
+                    `;
+                    taskListContainer.appendChild(el);
+                });
+            }
+            
+            function renderTaskHistory() {
+                const history = AppStorage.get('tasks_history').sort((a,b) => new Date(b.completionDate) - new Date(a.completionDate));
+                taskHistoryListContainer.innerHTML = '';
+                 if (history.length === 0) {
+                    taskHistoryListContainer.innerHTML = `<p class="text-gray-400 text-center py-4">No hay tareas completadas.</p>`;
+                    return;
+                }
+                history.forEach(task => {
+                    const el = document.createElement('div');
+                    el.className = 'bg-custom-dark p-4 rounded-lg shadow-md opacity-70';
+                    el.innerHTML = `
+                        <div>
+                            <h3 class="text-lg font-bold line-through">${task.title}</h3>
+                            <p class="text-sm text-gray-400">${task.person} - ${task.sector}</p>
+                            <p class="text-xs text-gray-500 mt-1">Completada: ${new Date(task.completionDate).toLocaleDateString('es-AR')}</p>
+                        </div>
+                    `;
+                    taskHistoryListContainer.appendChild(el);
+                });
+            }
+            
+            function saveTask(e) {
+                e.preventDefault();
+                const tasks = AppStorage.get('tasks');
+                const taskData = {
+                    id: Date.now(),
+                    title: document.getElementById('taskTitle').value,
+                    description: document.getElementById('taskDescription').value,
+                    sector: document.getElementById('taskSector').value,
+                    person: document.getElementById('taskPerson').value,
+                    type: document.getElementById('taskType').value,
+                    dueDate: document.getElementById('taskDueDate').value,
+                    requestDate: new Date().toISOString().split('T')[0]
+                };
+                tasks.push(taskData);
+                AppStorage.save('tasks', tasks);
+                closeTaskModal();
+                updateApp();
+            }
+
+            function completeTask(taskId) {
+                let tasks = AppStorage.get('tasks');
+                const history = AppStorage.get('tasks_history');
+                const taskToMove = tasks.find(t => t.id === taskId);
+
+                if (taskToMove) {
+                    taskToMove.completionDate = new Date().toISOString();
+                    history.push(taskToMove);
+                    tasks = tasks.filter(t => t.id !== taskId);
+                    AppStorage.save('tasks', tasks);
+                    AppStorage.save('tasks_history', history);
+                    updateApp();
+                }
+            }
+            
+            taskListContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('button[data-action="complete-task"]');
+                if (button) {
+                    completeTask(parseInt(button.dataset.id, 10));
+                }
+            });
+            
+            toggleHistoryBtn.addEventListener('click', () => {
+                showingTaskHistory = !showingTaskHistory;
+                taskListContainer.classList.toggle('hidden', showingTaskHistory);
+                taskHistoryListContainer.classList.toggle('hidden', !showingTaskHistory);
+                
+                if (showingTaskHistory) {
+                    toggleHistoryBtn.textContent = 'Ver Pendientes';
+                    tasksViewTitle.textContent = 'Historial de Tareas';
+                    openTaskModalBtn.classList.add('hidden');
+                    renderTaskHistory();
+                } else {
+                    toggleHistoryBtn.textContent = 'Ver Historial';
+                    tasksViewTitle.innerHTML = `Tareas para el <span id="selectedDateTitle" class="text-custom-yellow">${selectedDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</span>`;
+                    openTaskModalBtn.classList.remove('hidden');
+                    renderTasks();
+                }
+            });
+
+            function openTaskModal() {
+                taskForm.reset();
+                modalTitle.textContent = "Nueva Tarea";
+                document.getElementById('taskDueDate').value = selectedDate.toISOString().split('T')[0];
+                taskModal.classList.remove('hidden');
+                setTimeout(() => {
+                    taskModal.classList.remove('opacity-0');
+                    taskModal.querySelector('.modal-content').classList.remove('scale-95');
+                }, 10);
+            }
+
+            function closeTaskModal() {
+                taskModal.classList.add('opacity-0');
+                taskModal.querySelector('.modal-content').classList.add('scale-95');
+                setTimeout(() => taskModal.classList.add('hidden'), 250);
+            }
+            openTaskModalBtn.addEventListener('click', openTaskModal);
+            cancelTaskBtn.addEventListener('click', closeTaskModal);
+            taskForm.addEventListener('submit', saveTask);
+
+            function updateApp() {
+                renderCalendar();
+                if (showingTaskHistory) {
+                    renderTaskHistory();
+                } else {
+                    renderTasks();
+                }
+            }
+
+            showModule('tasks');
+            updateApp();
+            document.getElementById('stockEntryDate').valueAsDate = new Date();
+            document.getElementById('supervisionControlDate').valueAsDate = new Date();
+        });
+    </script>
+</body>
+</html>
